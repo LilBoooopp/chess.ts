@@ -7,8 +7,8 @@ const DIR_KNIGHT = [-17, -15, -10, -6, 6, 10, 15, 17];
 export const FLAG = {
   NORMAL: 'n',
   CAPTURE: 'c',
-  BIG_PAWN: 'b',
-  EP_CAPTURE: 'e',
+  BIG_PAWN: 'b', // double push
+  EP_CAPTURE: 'e', // en passant
   PROMOTION: 'p',
   KSIDE_CASTLE: 'k',
   QSIDE_CASTLE: 'q',
