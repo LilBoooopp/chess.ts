@@ -65,3 +65,14 @@ function generatePawnMoves(
     }
   }
 }
+
+function generateKnightMoves(from: number, state: BoardState, out: PseudoMove[]) {
+  const { board, turn } = state;
+
+  for (const off of DIR_KNIGHT) {
+    const to = from + off;
+    if (!isLegalKnightStep(from, to)) continue;
+    if (board[to]?.color === turn) continue; // cant step on own piece
+    out.push({ from, to, flags: board[to] ? FLAG.CAPTURE : FLAG.NORMAL });
+  }
+}
