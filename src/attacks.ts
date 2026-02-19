@@ -63,3 +63,17 @@ function isAttacked(
   return (false);
 }
 
+export function fingKing(board: (Piece | null)[], color: Color): number {
+  for (let i = 0; i < 64; i++) {
+    if (board[i]?.type === 'k' && board[i]?.color === color) return (i);
+  }
+  return (-1);
+}
+
+export function inCheck(board: (Piece | null)[], color: Color): boolean {
+  const kingIdx = findKing(board, color);
+  if (kingIdx === -1) return (false);
+  const enemy: Color = color === 'w' ? 'b' : 'w';
+  return (isAttacked(board, kingIdx, enemy));
+}
+

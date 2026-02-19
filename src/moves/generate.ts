@@ -76,3 +76,101 @@ function generateKnightMoves(from: number, state: BoardState, out: PseudoMove[])
     out.push({ from, to, flags: board[to] ? FLAG.CAPTURE : FLAG.NORMAL });
   }
 }
+
+function generateBishopMoves(from: number, state: BoardState, out: PseudoMove[]) {
+  const { board, turn } = state;
+
+  for (const off of DIR_BISHOP) {
+    let sq = from;
+    while (true) {
+      const to = sq + dir;
+      if (!isLegalSlide(sq, to)) break;
+      if (board[to]?.color === turn) break;
+      out.push({ from, to, flags: board[to] ? FLAG.CAPTURE : FLAG.NORMAL });
+      if (board[to]) break;
+      sq = to;
+    }
+  }
+}
+
+function generateRookMoves(from: number, state: BoardState, out: PseudoMove[]) {
+  const { board, turn } = state;
+
+  for (const dir of DIR_ROOK) {
+    let sq = from;
+    while (true) {
+      const to = sq + dir;
+      if (!isLegalSlide(sq, to)) break;
+      if (board[to]?.color === turn) break;
+      out.push({ from, to, flags: board[to] ? FLAG.CAPTURE : FLAG.NORMAL });
+      if (board[to]) break;
+      sq = to;
+    }
+  }
+}
+
+function generateQueenMoves(from: number, state: BoardState, out: PseudoMove[]) {
+  generateBishopMoves(from, state, out);
+  generateRookMoves(from, state, out);
+}
+
+function generateKingMoves(from: number, state: BoardState, out: PseudoMove[]) {
+  const { board, turn } = state;
+
+  for (const dir of DIR_KING) {
+    const to = from + dir;
+
+    if (!isLegalSlide(from, to)) continue;
+    if (board[to]?.color === turn) continue;
+    out.push({ from, to, flags: board[to] ? FLAG.CAPTURE : FLAG.NORMAL });
+  }
+}
+
+function generateCastlingMoves(from: number, state: BoardState, out: PseudoMove[]) {
+  const { board, turn, castling } = state;
+  const enemy: Color = turn === 'w' ? 'b' : 'w';
+  const backRank = turn === 'w' ? 0 : 7;
+  const kingHome = backRank * 8 + 4; // e1 or e8
+
+  if (from !== kingHome) return;
+  if (inCheck(board, turn)) return;
+
+  // Kingside
+  if (castling.includes(turn === 'w' ? 'K' : 'k')) {
+    const rookIdx = backRank * 8 + 7;
+    if (!board[kingHome + 1] && !board[kingHome + 2] && board[rookIdx]?.type === 'r' && !isAttacked(board, kingHome + 2, enemy)) {
+      out.push({ from, to: kingHome + 2, flags: FLAG.KSIDE_CASTLE });
+    }
+  }
+
+  // Queenside
+  if (castling.includes(turn === 'w' ? 'Q' : 'q')) {
+    const rookIdx = backRank * 8;
+    if (!board[kingHome - 1] && !board[kingHome - 2] && !board[kingHome - 3] && board[rookIdx]?.type === 'r' && !isAttacked(board, kingHome - 1, enemy) && !isAttacked(board, kingHome - 2, enemy)) {
+      out.push({ from, to: kingHome - 2, flags: FLAG.QSIDE_CASTLE });
+    }
+  }
+}
+
+export function generatePseudoMoves(state: BoardState): PseudoMove[] {
+  const out: PseudoMove[] = [];
+
+  for (let from = 0; from < 64; from++) {
+    const piece = state.board[from];
+    if (!piece || piece.color !== state.turn) continue;
+
+    switch (piece.type) {
+      case 'p': generatePawnMoves(from, state, out); break;
+      case 'n': generateKnightMoves(from, state, out); break;
+      case 'b': generateBishopMoves(from, state, out); break;
+      case 'r': generateRookMoves(from, state, out); break;
+      case 'q': generateQueenMoves(from, state, out); break;
+      case 'k':
+        generateKingMoves(from, state, out);
+        generateCastlingMoves(from, state, out);
+        break;
+    }
+  }
+
+  return (out);
+}
