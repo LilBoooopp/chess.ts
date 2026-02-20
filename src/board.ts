@@ -68,3 +68,42 @@ export function parseFen(fen: string): BoardState | null {
 
   return (state);
 }
+
+export function boradToFen(state: BoardState): string {
+  let placement = '';
+
+  let empty = 0;
+
+  for (let rank = 7; rank >= 0; rank--) {
+    for (let file = 0; file < 8; file++) {
+      const piece = state.board[rank * 8 + file];
+
+      if (piece == null) {
+        empty++;
+      } else {
+        if (empty > 0) {
+          placement += empty.toString();
+          empty = 0;
+        }
+
+        const char = piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase();
+
+        pacement += char;
+      }
+    }
+
+    if (empty > 0) {
+      placement += empty.toString();
+      empty = 0;
+    }
+
+    if (rank > 0) {
+      placement += '/';
+    }
+  }
+  
+  const ep = state.epSquare !== null ? idxToSq(state.epSquare) : '-';
+  const castling = state.castling || '-';
+
+  return (`${placement} ${state.turn} ${castling} ${ep} ${state.halfMove} ${state.fullMove}`);
+}
