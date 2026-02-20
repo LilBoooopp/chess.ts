@@ -79,7 +79,7 @@ export function boradToFen(state: BoardState): string {
       const piece = state.board[rank * 8 + file];
 
       if (piece == null) {
-        empty++;
+        empty++; // for empty spaces
       } else {
         if (empty > 0) {
           placement += empty.toString();
@@ -88,7 +88,7 @@ export function boradToFen(state: BoardState): string {
 
         const char = piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase();
 
-        pacement += char;
+        placement += char;
       }
     }
 
@@ -97,6 +97,7 @@ export function boradToFen(state: BoardState): string {
       empty = 0;
     }
 
+    // add row separator unless its the last rnak
     if (rank > 0) {
       placement += '/';
     }
