@@ -31,3 +31,40 @@ function isLegalKnightStep(from: number, to:number): boolean {
   const rd = Math.abs(ri(to) - ri(from));
   return ((fd === 1 && rd === 2) || (fd === 2 && rd === 1));
 }
+
+export function parseFen(fen: string): BoardState | null {
+  const parts = fen.trim().split(/\s+/);
+  if (parts.length < 4) return (null);
+
+  const [placement, turn, castling, epStr, halfMove, fullMove] = parts;
+
+  const state: BoardState = {
+    board: new Array(64).fill(null),
+    turn: turn === 'b' ? 'b' : 'w',
+    castling: castling === '-' ? '' : castling,
+    epSquare: epStr === '-' ? null : sqToIdx(epStr),
+    halfMove: halfMove ? parseInt(halfMove) : 0,
+    fullMove: fullMove ? parseInt(fullMove) : 1,
+  };
+
+  const ranks = placement.split('/');
+  if (ranks.length !== 8) return (null);
+
+  for (let rankIdx = 0; rankIdx < 8; rankIdx++) {
+    const boardRank = 7 - rankIdx; // FEN starts at rank8
+    let fileIdx = 0;
+
+    for (const ch of ranks[rankIdx]) {
+      if (ch >= '1' && ch <= '8') {
+        fileIdx += parseInt(ch);
+      } else {
+        const color: Color = ch === ch.toUpperCase() ? 'w' : 'b';
+        const type = ch.toLowerCase() as PieceSymbol;
+        state.board[boardRank * 8 + fileIdx] = { type, color };
+        fileIx++;
+      }
+    }
+  }
+
+  return (state);
+}
