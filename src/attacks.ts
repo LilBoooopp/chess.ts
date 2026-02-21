@@ -63,7 +63,7 @@ function isAttacked(
   return (false);
 }
 
-export function fingKing(board: (Piece | null)[], color: Color): number {
+export function findKing(board: (Piece | null)[], color: Color): number {
   for (let i = 0; i < 64; i++) {
     if (board[i]?.type === 'k' && board[i]?.color === color) return (i);
   }

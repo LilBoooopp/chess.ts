@@ -1,107 +1,268 @@
-export type Color = 'w' | 'b';
-export type PieceSymbol = 'p' | 'n' | 'r' | 'q' | 'k';
-export type Square = string;
+import { Color, PieceSymbol, Square, Piece, Move } from './types';
+import { BoardState, parseFen, boardToFen, sqToIdx, idxToSq } from './board';
+import { generateLegalMoves } from './moves/filter';
+import { applyMove } from './moves/apply';
+import { inCheck } from './attacks';
+import { buildSan } from './notation/san';
+import { buildPgn, parsePgn } from './notation/pgn';
+import { FLAG } from './constatns';
 
-const DIR_BISHOP = [-9, -7, 7, 9];
-const DIR_ROOK = [-8, -1, 1, 8];
-const DIR_QUEEN = [...DIR_BISHOP, ...DIR_ROOK];
-const DIR_KIN = [...DIR_QUEEN];
-const DIR_KNIGHT = [-17, -15, -10, 6, 6, 10, 15, 17];
+const DEFAULT_FEN = 'qnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-export interface Piece {
-  type: PieceSymbol;
-  color: Color;
-}
+export class Chess {
+  private _board: BoardState;
+  private _history: Move[] = [];
+  private _headers: Record<string, string> = {};
+  private _positionCounts: Map<string, number> = new Map();
 
-export interface BoardState {
-  board: (Piece | null)[];
-  turn: Color;
-  castling: string;
-  epSquare: number | null; // en passant target square
-  halfMove: number; // 50-move rule
-  fullMove: number; // increments after black moves
-}
-
-function sqToIdx(sq: string): number {
-  return ((parseInt(sq[1]) - 1) * 8 + (sq.charCodeAt(0) - 97));
-}
-
-function idxToSq(idx: number): string {
-  return (String.fromCharCode(97 + (idx % 8)) + (Math.floor(idx / 8) + 1));
-}
-
-const fi = (idx: number) => idx % 8; // file (0 = 1, 7 = h)
-const ri = (idx:number) => Math.floor(idx / 8) // rank (0 = rank1, 7 = rank8)
-
-function isLegalSlide(from: number, to: number): boolean {
-  if (to < 0 || to > 63) return (false);
-  return (Math.abs(fi(to) - fi(from)) <= 1);
-}
-
-function isLegalKnightStep(from: number, to:number): boolean {
-  if (to < 0 || to > 63) return (false);
-  const fd = Math.abs(fi(to) - fi(from));
-  const rd = Math.abs(ri(to) - ri(from));
-  return ((fd === 1 && rd === 2) || (fd === 2 && rd === 1));
-}
-
-function isAttacked(
-  board: (Piece | null)[],
-  targetIdx: number,
-  byColor: Color
-): boolean {
-  // Knights
-  for (const off of DIR_KNIGHT) {
-    const from = targetIdx + off;
-    if (isLegalKnightStep(targetIdx, from) && board[from]?.type === 'n' && board[from]?.color === byColor) return true;
+  constructor(fen: string = DEFAULT_FEN) {
+    const parsed = parseFen(fen);
+    if (!parsed) throw new Error(`Invalid FEN: ${fen}`);
+    this._board = parsed;
+    this._recordPosition();
   }
 
-  // diagonal rays
-  for (const dir of DIR_BISHOP) {
-    let sq = targetIdx;
-    while (true) {
-      const next = sq + dir;
-      if (!isLegalSlide(sq, next)) break;
-      const p = board[next];
-      if (p) {
-        if (p.color === byColor && (p.type === 'b' || p.type === 'q'))
-          return (true);
-        break;
+  private _recordPosition() {
+    // Only first 4 FEN fields matter for repetition (not clocks)
+    const key = this.fen().split(' ').slice(0, 4).join(' ');
+    this._positionCounts.set(key, (this._positionCounts.get(key) ?? 0) + 1);
+  }
+
+  fen(): string {
+    return (boardToFen(this._board));
+  }
+
+  turn(): Color {
+    return (this._board.turn);
+  }
+
+  move(input: { from: Square; to: Square; promotion?: PieceSymbol } | string): Move | null {
+const legal = generateLegalMoves(this._board);
+    const beforeFen = this.fen();
+
+    let pm = legal.find((m) => {
+      if (typeof input === 'string') {
+        const candidate = this._buildMove(m, beforeFen, legal);
+        return (candidate.san === input || candidate.lan === input);
+      } else {
+        const fromIdx = sqToIdx(input.from);
+        const toIdx = sqToIdx(input.to);
+        const promo = input.promotion?.toLowerCase() as PieceSymbol | undefined;
+        if (m.from !=== fromIdx || m.to !== toIdx) return (false);
+        if (m.flags.includes(FLAG.PROMOTION)) {
+          return ((m.promotion ?? 'q') === (promo ?? 'q'));
+        }
+        return (true);
       }
-      sq = next;
-    }
+    });
+
+    if (!pm) return (null);
+
+    // build full Move object
+    const move = this._buildMove(pm, beforeFen, legal);
+
+    // apply to board
+    this._board = applyMove(this._board, pm);
+
+    // record
+    this._history.push(move);
+    this._recordPosition();
+
+    return (move);
   }
 
-  // orthagonal rays
-  for (const dir of DIR_ROOK) {
-    let sq = targetIdx;
-    while (true) {
-      const next = sq + dir;
-      if (!isLegalSlide(sq, next)) break;
-      const p = board[next];
-      if (p) {
-        if (p.color === byColor && (p.type === 'r' || p.type === 'q'))
-          return (true);
-        break;
+  // private helper to construct a full Move object from PseudoMove
+  private _buildMove(pm: PseudoMove, beforeFen: string, allLegal: PseudoMove[]): Move {
+    const { board } = this._board;
+    const { from, to, flags, promotion } = pm;
+    const piece = board[from]!;
+
+    const captured = flags === FLAG.EP_CAPTURE ? 'p' : board[to]?.type ?? undefined;
+
+    const san = buildSan(this._board, pm, allLegal);
+    const nextState = applyMove(this._board, pm);
+    const afterFen = boardToFen(nextState);
+
+    return {
+      color: this._board.turn,
+      from: idxToSq(from),
+      to:  idxToSq(to),
+      piece: piece.type,
+      captured,
+      promation: promotion ?? undefined,
+      flags,
+      san,
+      lan: idxToSq(from) + idxToSq(to) + (promotion ?? ''),
+      before: beforeFen,
+      after: afterFen,
+    };
+  }
+
+  history(): string[];
+  history(options: { verbose: true }): Move[];
+  history(options?: { verbose?: boolean }): Move[] | string[] {
+    if (options?.verbose) return ([...this._history]);
+    return (this._history.map((m) => m.san));
+  }
+
+  undo(): Move | null {
+    if (this._history.legnth === 0) return (null);
+
+    const undone = this._history.pop()!;
+
+    // decrement position count
+    const key = this.fen().split(' ').slice(0, 4).join(' ');
+    const count = this._positionCounts.get(key) ?? 1;
+    if (count <= 1) this._positionCounts.delete(key);
+    else this._positionCounts.set(key, count - 1);
+
+    // replay from scratch
+    const startFen = this._headers['FEN'] ?? DEFAULT_FEN;
+    const replayMoves = [...this._history];
+    this.load(startFen);
+    for (const m of replayMoves) {
+      this.move({ from: m.from, to: m.to, promotion: m.promotion });
+    }
+
+    return (undone);
+  }
+
+  reset(): void {
+    this.load(DEFAULT_FEN);
+    this._headers = {};
+  }
+  
+  load(fen: string): boolean {
+    const parsed = parseFen(fen);
+    if (!parsed) return (false);
+    this._board = parsed;
+    this._history = [];
+    this._positionCounts.clear();
+    this._recordPosition();
+    return (true);
+  }
+
+  loadPgn(pgn: string): boolean {
+    const { headers, movesans } = parsePgn(pgn);
+    const startFen = headers['FEN'] ?? DEFAULT_FEN;
+    const engin = new Chess(startFen);
+
+    for (const san of moveSans) {
+      if (!engine.move(san)) return (false);
+    }
+
+    this._board = engine._board;
+    this._history = engine._history;
+    this._positionCounts = engine._positionCounts;
+    this._headers = { ...headers };
+    return (true);
+  }
+
+  pgn(): string {
+    return (buildPgn(this._headers, this._history));
+  }
+
+  clear(): void {
+    this._board {
+      board: new Array(64).fill(null),
+      turn: 'w',
+      castling: '',
+      epSquare: null,
+      halfMove: 0,
+      fullMove: 1
+    };
+    this._history = [];
+    this._positionCounts.clear();
+  }
+
+  isCheck(): boolean {
+    return (inCheck(this._board, this._board.turn));
+  }
+
+  isCheckmate(): boolean {
+    return (this.isCheck() && generateLegalMoves(this._board).length === 0);
+  }
+
+  isStalemate(): boolean {
+    return (!this.isCheck() && generateLegalMoves(this._board).length === 0);
+  }
+
+  isInsufficientMaterial(): boolean {
+    const pieces = this._board.board.filter(Boolean) as Piece[];
+    const nonKings = pieces.filter(p => p.type !== 'k');
+
+    if (nonKings.length === 0) return (true) // K vs K
+
+    if (nonKings.length === 1) {
+      return (nonKings[0].type === 'n' || nonKings[0].type === 'b'); // K vs KN or K vs KB
+    }
+
+    if (nonKings.length === 2) {
+      const [a, b] = nonKings;
+      if (a.type === 'b' && b.type === 'b' && a.color !== b.color) {
+        const aIdx = this._board.board.indexOf(a);
+        const bIdx = this._board.board.indexOf(b);
+        return ((fi(aIdx) + ri(aIdx)) % 2 === (fi(bIdx) + ri(bIdx)) % 2);
       }
-      sq = next;
     }
+
+    return (false);
   }
 
-  // King
-  for (const dir of DIR_KIN) {
-    const from = targetIdx + dir;
-    if (isLegalSlide(targetIdx, from) && board[from]?.type === 'k' && board[from]?.color === byColor)
-      return (true);
+  isThreefoldRepetition(): boolean {
+    const key = this.fen().split(' ').slice(0, 4).join(' ');
+    return ((this._positionCounts.get(key) ?? 0) >= 3);
   }
 
-  // Pawns (direction depends on attacking color)
-  const pawnOffsets = byColor === 'w' ? [7, 9] : [-7, -9];
-  for (const off of pawnOffsets) {
-    const from = targetIdx + off;
-    if (isLegalSlide(targetIdx, from) && board[from]?.type === 'p' && board[from]?.color === byColor)
-      return (true);
+  isDraw(): boolean {
+    return (
+      this.isStalemate() ||
+      this.isInsufficientMaterial() ||
+      this.isThreefoldRepetition() ||
+      this._board.halfMove >= 100 // 50-move rule
+    );
   }
 
-  return (false);
+  isGameOver(): boolean {
+    return (this.isCheckmate() || this.isDraw());
+  }
+
+  get(square: Square): Piece | null {
+    return (this._board.board[sqToIdx(square)] ?? null);
+  }
+
+  put(piece: Piece, square: Square): boolean {
+    this._board.board[sqToIdx(square)] = { ...piece };
+    return (true);
+  }
+
+  remove(square: Square): Piece | null {
+    const idx = sqToIdx(square);
+    const piece = this._board.board[idx];
+    this._board.board[idx] = null;
+    return (piece ?? null);
+  }
+
+  board(): ({ type: PieceSymbol; color: Color; square: Square } | null)[][] {
+    const result: ({ type: PieceSymbol; color: Color; square: Square } | null)[][] = [];
+    for (let rank = 7; rank >= 0; rank--) {
+      const row: ({ type: PieceSymbol; color: Color; square: Square } | null)[] = [];
+      for (let file = 0; file < 8; file++) {
+        const piece = this._board.board[rank * 8 + file];
+        row.push(piece ? { ...piece, square: idxToSq(rank * 8 + file) } : null);
+      }
+      result.push(row);
+    }
+    return (result);
+  }
+
+  moves(options?: { square?: Square; verbose?: boolean }): Move[] | string[] {
+    const fromIdx = options?.square ? sqToIdx(options.square) : undefined;
+    const legal = generateLegalMoves(this._board, fromIdx);
+    const beforeFen = this.fen();
+    const allLegal = fromIdx !== undefined ? generateLegalMoves(this._board) : legal;
+    const movesArr = legal.map(pm => this._boardMove(pm, beforeFen, allLegal));
+    if (options?.verbose) return (movesArr);
+    return (movesArr.map(m => m.san));
+  }
 }

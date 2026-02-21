@@ -6,3 +6,17 @@ export interface Piece {
   type: PieceSymbol;
   color: Color;
 }
+
+export inerface Move {
+  color: Color;
+  from: Square;
+  to: Square;
+  piece: PieceSymbol;
+  captured?: PieceSymbol; // only on captures
+  promotion?: PieceSymbol; // only on promotions
+  flags: string;
+  san: string; // e.g. 'Nf3'
+  lan: string; // e.g. 'g1f3' (from+to)
+  before: string; // FEN before move
+  after: string; // FEN after move
+}
