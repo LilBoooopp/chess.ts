@@ -172,6 +172,27 @@ section('Castling rights');
   expect('moving h1 rook removes kingside', g3.getCastlingRights('w'), { kingside: false, queenside: true });
 }
 
+// --- Illegal moves ---
+
+section('Illegal moves');
+{
+  const g = new Chess();
+  expect('move off board',  g.move({ from: 'e2', to: 'e9' }), null);
+  expect('wrong color',     g.move({ from: 'e7', to: 'e5' }), null);
+  expect('empty square',    g.move({ from: 'e4', to: 'e5' }), null);
+
+  // Pinned piece
+  const g2 = new Chess();
+  g2.load('8/8/8/8/8/8/q7/K6R w - - 0 1');
+  expect('pinned rook cannot move', g2.move({ from: 'h1', to: 'h2' }), null);
+
+  // Cannot castle through check
+  const g3 = new Chess();
+  g3.load('r3k2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1');
+  g3.move({ from: 'd1', to: 'd8' }); // put black in check on d8
+  expect('cannot castle through check', g3.move({ from: 'e8', to: 'c8' }), null);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
