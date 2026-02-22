@@ -289,6 +289,23 @@ section('50-move rule');
   expect('pawnmove resets 50-move clock', g2.isDraw(), false);
 }
 
+// --- Threefold repetition ---
+
+section('Threefold repetition');
+{
+  const g = new Chess();
+  for (let i = 0; i < 3; i++) {
+    g.move({ from: 'g1', to: 'f3' });
+    g.move({ from: 'g8', to: 'f6' });
+    g.move({ from: 'f3', to: 'g1' });
+    g.move({ from: 'f6', to: 'g8' });
+  }
+  expect('threefold repetition detected', g.isThreefoldRepetition(), true);
+  expect('threefold is a draw',           g.isDraw(), true);
+}
+
+
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
