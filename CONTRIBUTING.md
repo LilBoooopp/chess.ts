@@ -4,7 +4,7 @@ Contributions are welcome - bug fixes, new features, additional tests, or docume
 
 ## Getting started
 ```bash
-git clone
+git clone git@github.com:LilBoooopp/chess.ts.git
 cd chess.ts
 npm install
 npx ts-node src/Chess.test.ts # make sure all tests pass before you start
