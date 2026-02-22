@@ -1,7 +1,6 @@
-import { BoardState } from '../board';
+import { BoardState, ri } from '../board';
 import { PseudoMove } from './generate';
 import { FLAG } from '../constants';
-import { ri } from '../board';
 
 export function applyMove(state: BoardState, pm: PseudoMove): BoardState {
   const next: BoardState = {
@@ -10,12 +9,12 @@ export function applyMove(state: BoardState, pm: PseudoMove): BoardState {
   };
   const { board, turn } = next;
   const { from, to, flags, promotion } = pm;
-  const piece = board[from];
+  const piece = board[from]!;
 
   next.epSquare = null; // reset every move
 
   // Move piece
-  board[to] = promotion ? { type: promotion, color: turn } : { ...piece };
+  board[to] = promotion ? { type: promotion, color: turn } : { ...piece! };
   board[from] = null;
 
   // En passant
@@ -44,13 +43,13 @@ export function applyMove(state: BoardState, pm: PseudoMove): BoardState {
   }
   if (piece.type === 'r') {
     if (from === 0) next.castling = next.castling.replace('Q', '');
-    if (from === 7) next.castling = next.castling.replate('K', '');
-    if (from === 56) next.castling = next.castling.replate('q', '');
-    if (from === 63) next.castling = next.castling.replate('k', '');
+    if (from === 7) next.castling = next.castling.replace('K', '');
+    if (from === 56) next.castling = next.castling.replace('q', '');
+    if (from === 63) next.castling = next.castling.replace('k', '');
   }
 
   // Half-move clock
-  next.halfMove = (piece.type === 'p' || flags === FLAG.CAPTURE || flags == FLAG.EP_CAPTURE) ? 0 : next.halfMove + 1;
+  next.halfMove = (piece.type === 'p' || flags === FLAG.CAPTURE || flags === FLAG.EP_CAPTURE) ? 0 : next.halfMove + 1;
 
   // Full-move number
   if (turn === 'b') next.fullMove++;

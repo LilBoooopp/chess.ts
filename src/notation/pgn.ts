@@ -28,7 +28,7 @@ export function buildPgn(
 
 export function parsePgn(pgn: string): {
   headers: Record<string, string>;
-  moveSans: string[] = [];
+  moveSans: string[];
 } {
   const headers: Record<string, string> = {};
   const moveSans: string[] = [];

@@ -3,7 +3,7 @@
 
 import { Color, PieceSymbol, Square, Piece, Move } from './types';
 
-export GameStatus = 'waiting' | 'playing' | 'finished' | 'draw';
+export type GameStatus = 'waiting' | 'playing' | 'finished' | 'draw';
 
 export interface GameState {
   status: GameStatus;
