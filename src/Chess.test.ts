@@ -326,6 +326,27 @@ section('History');
   expect('second move color',       verbose[1].color, 'b');
 }
 
+// --- Undo ---
+
+section('Undo');
+{
+  const g = new Chess();
+  g.move({ from: 'e2', to: 'e4' });
+  g.move({ from: 'e7', to: 'e5' });
+
+  const undone = g.undo();
+  expect('undo returns move', undone?.san, 'e5');
+  expect('back to white turn', g.turn(), 'w');
+  expect('history length after undo', g.history().length, 1);
+  expect('e5 empty after undo', g.get('e5'), null);
+  expect('e7 restored after undo', g.get('e7'), { type: 'p', color: 'b' });
+
+  g.undo();
+  expect('back to start FEN', g.fen(), 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 0 1');
+
+  expect('undo on empty returns null', g.undo(), null);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
