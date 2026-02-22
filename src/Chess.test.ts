@@ -273,6 +273,22 @@ section('Insufficient material');
   expect('K vs KQ is sufficient', g5.isInsufficientMaterial(), false);
 }
 
+// --- 50-move rule ---
+
+section('50-move rule');
+{
+  const g = new Chess();
+  g.load('4k3/8/8/8/8/8/8/4K2R w - - 99 1');
+  g.move({ from: 'h1', to: 'h2' });
+  expect('50-move rule triggers draw', g.isDraw(), true);
+
+  // Pawn moves resets clock
+  const g2 = new Chess();
+  g2.load('4k3/p7/8/8/8/8/8/3K3 b - - 99 1');
+  g2.move({ from: 'a7', to: 'a6' });
+  expect('pawnmove resets 50-move clock', g2.isDraw(), false);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
