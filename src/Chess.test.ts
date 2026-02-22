@@ -347,6 +347,22 @@ section('Undo');
   expect('undo on empty returns null', g.undo(), null);
 }
 
+// --- Move generation ---
+
+section('Move generation');
+{
+  const g = new Chess();
+  expect('20 starting moves', (g.moves() as string[]).length, 20);
+
+  const e2 = g.move({ square: 'e2' }) as string[];
+  expect('e2 pawn has 2 moves', e2.length, 2);
+  expect('e2 moves are e3 and e4', e2.sort(), ['e3', 'e4'].sort());
+
+  const verbose = g.moves({ verbose: true }) as any[];
+  expect('verbose moves are objects', typeof verbose[0], 'object');
+  expect('verbose moves have san', typeof verbose[0].san, 'string');
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
