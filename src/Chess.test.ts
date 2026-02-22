@@ -57,7 +57,7 @@ section('FEN load');
   g.load('rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2');
   expect('correct turn after load',   g.turn(), 'w');
   expect('white pawn on e4',          g.get('e4'), { type: 'p', color: 'w' });
-  expect('black pawn on e5',          g.get('e5'), { type: 'p', color 'b' });
+  expect('black pawn on e5',          g.get('e5'), { type: 'p', color: 'b' });
   expect('load returns true',         new Chess().load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'), true);
   expect('invalid FEN returns false', new Chess().load('not a fen'), false);
 }
@@ -197,7 +197,7 @@ section('Illegal moves');
 
 section('Check detection');
 {
-  cont g = new Chess();
+  const g = new Chess();
   g.load('4k3/8/8/8/8/8/8/4K2R w - - 0 1');
   g.move({ from: 'h1', to: 'h8' });
   expect('rook gives check',  g.isCheck(), true);
@@ -222,14 +222,14 @@ section('Checkmate');
   expect('fools mate is game over',   g.isGameOver(), true);
   expect('fools mate not stalemate',  g.isStalemate(), false);
   expect('san has # suffix',          g.history()[3].includes('#'), true);
-  expect('no legal moves',            (g.move() as string[]).length, 0);
+  expect('no legal moves',            (g.moves() as string[]).length, 0);
 
   // Scholar's mate
   const g2 = new Chess();
   g2.move({ from: 'e2', to: 'e4' });
   g2.move({ from: 'e7', to: 'e5' });
   g2.move({ from: 'f1', to: 'c4' });
-  g2.omve({ from: 'b8', to: 'c6' });
+  g2.move({ from: 'b8', to: 'c6' });
   g2.move({ from: 'd1', to: 'h5' });
   g2.move({ from: 'a7', to: 'a6' });
   g2.move({ from: 'h5', to: 'f7' });
@@ -354,7 +354,7 @@ section('Move generation');
   const g = new Chess();
   expect('20 starting moves', (g.moves() as string[]).length, 20);
 
-  const e2 = g.move({ square: 'e2' }) as string[];
+  const e2 = g.moves({ square: 'e2' }) as string[];
   expect('e2 pawn has 2 moves', e2.length, 2);
   expect('e2 moves are e3 and e4', e2.sort(), ['e3', 'e4'].sort());
 

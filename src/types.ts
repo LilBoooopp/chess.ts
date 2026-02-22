@@ -7,7 +7,7 @@ export interface Piece {
   color: Color;
 }
 
-export inerface Move {
+export interface Move {
   color: Color;
   from: Square;
   to: Square;

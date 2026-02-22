@@ -113,9 +113,14 @@ export abstract class GameEngine {
   // --- Game status ---
 
   /**
+   * Returns true if the current player is in check.
+   */
+  abstract isCheck(): boolean;
+
+  /**
    * Returns true if the current player is in checkmate.
    */
-  abstract isCheckmakte(): boolean;
+  abstract isCheckmate(): boolean;
   
   /**
    * Returns true is the position is stalemate.

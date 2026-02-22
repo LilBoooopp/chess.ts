@@ -7,8 +7,9 @@ import { buildSan } from './notation/san';
 import { buildPgn, parsePgn } from './notation/pgn';
 import { FLAG } from './constants';
 import { GameEngine } from './GameEngine';
+import { generatePseudoMoves, PseudoMove } from './moves/generate';
 
-const DEFAULT_FEN = 'qnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+const DEFAULT_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 export class Chess extends GameEngine {
   private _board: BoardState;
@@ -49,7 +50,7 @@ const legal = generateLegalMoves(this._board);
         const fromIdx = sqToIdx(input.from);
         const toIdx = sqToIdx(input.to);
         const promo = input.promotion?.toLowerCase() as PieceSymbol | undefined;
-        if (m.from !=== fromIdx || m.to !== toIdx) return (false);
+        if (m.from !== fromIdx || m.to !== toIdx) return (false);
         if (m.flags.includes(FLAG.PROMOTION)) {
           return ((m.promotion ?? 'q') === (promo ?? 'q'));
         }
@@ -90,7 +91,7 @@ const legal = generateLegalMoves(this._board);
       to:  idxToSq(to),
       piece: piece.type,
       captured,
-      promation: promotion ?? undefined,
+      promotion: promotion ?? undefined,
       flags,
       san,
       lan: idxToSq(from) + idxToSq(to) + (promotion ?? ''),
@@ -107,7 +108,7 @@ const legal = generateLegalMoves(this._board);
   }
 
   undo(): Move | null {
-    if (this._history.legnth === 0) return (null);
+    if (this._history.length === 0) return (null);
 
     const undone = this._history.pop()!;
 
@@ -144,9 +145,9 @@ const legal = generateLegalMoves(this._board);
   }
 
   loadPgn(pgn: string): boolean {
-    const { headers, movesans } = parsePgn(pgn);
+    const { headers, moveSans } = parsePgn(pgn);
     const startFen = headers['FEN'] ?? DEFAULT_FEN;
-    const engin = new Chess(startFen);
+    const engine = new Chess(startFen);
 
     for (const san of moveSans) {
       if (!engine.move(san)) return (false);
@@ -164,7 +165,7 @@ const legal = generateLegalMoves(this._board);
   }
 
   clear(): void {
-    this._board {
+    this._board = {
       board: new Array(64).fill(null),
       turn: 'w',
       castling: '',
@@ -177,7 +178,7 @@ const legal = generateLegalMoves(this._board);
   }
 
   isCheck(): boolean {
-    return (inCheck(this._board, this._board.turn));
+    return (inCheck(this._board.board, this._board.turn));
   }
 
   isCheckmate(): boolean {
@@ -262,7 +263,7 @@ const legal = generateLegalMoves(this._board);
     const legal = generateLegalMoves(this._board, fromIdx);
     const beforeFen = this.fen();
     const allLegal = fromIdx !== undefined ? generateLegalMoves(this._board) : legal;
-    const movesArr = legal.map(pm => this._boardMove(pm, beforeFen, allLegal));
+    const movesArr = legal.map(pm => this._buildMove(pm, beforeFen, allLegal));
     if (options?.verbose) return (movesArr);
     return (movesArr.map(m => m.san));
   }
@@ -276,12 +277,12 @@ const legal = generateLegalMoves(this._board);
 
   ascii(): string {
     const symbols: Record<string, string> = {
-      wk: 'K', wq: 'Q', wq: 'R', wb: 'B', wn: 'N', wp: 'P',
+      wk: 'K', wq: 'Q', wr: 'R', wb: 'B', wn: 'N', wp: 'P',
       bk: 'k', bq: 'q', br: 'r', bb: 'b', bn: 'n', bp: 'p',
     };
     let result = '  +------------------------+\n';
     for (let rank = 7; rank >= 0; rank--) {
-      result += `${rank + 2} |`;
+      result += `${rank + 1} |`;
       for (let file = 0; file < 8; file++) {
         const piece = this._board.board[rank * 8 + file];
         result += piece ? ` ${symbols[piece.color + piece.type]} ` : ' . ';
@@ -313,8 +314,8 @@ const legal = generateLegalMoves(this._board);
   }
 
   // chess.js aliases
-  inCheck() { return (this.isCheck();) }
+  inCheck() { return (this.isCheck()); }
   inCheckmate() { return (this.isCheckmate()); }
-  inStalemate() { return (this.isStalemate)); }
+  inStalemate() { return (this.isStalemate()); }
   inDraw() { return (this.isDraw()); }
 }
