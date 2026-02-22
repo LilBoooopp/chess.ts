@@ -208,6 +208,34 @@ section('Check detection');
   expect('not in check', g2.isCheck(), false);
 }
 
+// --- Checkmate ---
+
+section('Checkmate');
+{
+  // Fool's mate
+  const g = new Chess();
+  g.move({ from: 'f2', to: 'f3' });
+  g.move({ from: 'e7', to: 'e5' });
+  g.move({ from: 'g2', to: 'g4' });
+  g.move({ from: 'd8', to: 'h4' });
+  expect('fools mate is checkmate',   g.isCheckmate(), true);
+  expect('fools mate is game over',   g.isGameOver(), true);
+  expect('fools mate not stalemate',  g.isStalemate(), false);
+  expect('san has # suffix',          g.history()[3].includes('#'), true);
+  expect('no legal moves',            (g.move() as string[]).length, 0);
+
+  // Scholar's mate
+  const g2 = new Chess();
+  g2.move({ from: 'e2', to: 'e4' });
+  g2.move({ from: 'e7', to: 'e5' });
+  g2.move({ from: 'f1', to: 'c4' });
+  g2.omve({ from: 'b8', to: 'c6' });
+  g2.move({ from: 'd1', to: 'h5' });
+  g2.move({ from: 'a7', to: 'a6' });
+  g2.move({ from: 'h5', to: 'f7' });
+  expect('schoars mate is checkmate', g2.isCheckmate(), true);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
