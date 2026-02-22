@@ -2,7 +2,7 @@ import { Piece, Color } from './types';
 import { DIR_BISHOP, DIR_ROOK, DIR_KING, DIR_KNIGHT } from './constants';
 import { isLegalSlide, isLegalKnightStep } from './board';
 
-function isAttacked(
+export function isAttacked(
   board: (Piece | null)[],
   targetIdx: number,
   byColor: Color

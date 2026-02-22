@@ -1,4 +1,4 @@
-import { Piece, Color } from './types';
+import { Piece, PieceSymbol, Color } from './types';
 
 export interface BoardState {
   board: (Piece | null)[];
@@ -20,12 +20,12 @@ export function idxToSq(idx: number): string {
 export const fi = (idx: number) => idx % 8; // file (0 = 1, 7 = h)
 export const ri = (idx:number) => Math.floor(idx / 8) // rank (0 = rank1, 7 = rank8)
 
-function isLegalSlide(from: number, to: number): boolean {
+export function isLegalSlide(from: number, to: number): boolean {
   if (to < 0 || to > 63) return (false);
   return (Math.abs(fi(to) - fi(from)) <= 1);
 }
 
-function isLegalKnightStep(from: number, to:number): boolean {
+export function isLegalKnightStep(from: number, to:number): boolean {
   if (to < 0 || to > 63) return (false);
   const fd = Math.abs(fi(to) - fi(from));
   const rd = Math.abs(ri(to) - ri(from));
@@ -61,7 +61,7 @@ export function parseFen(fen: string): BoardState | null {
         const color: Color = ch === ch.toUpperCase() ? 'w' : 'b';
         const type = ch.toLowerCase() as PieceSymbol;
         state.board[boardRank * 8 + fileIdx] = { type, color };
-        fileIx++;
+        fileIdx++;
       }
     }
   }

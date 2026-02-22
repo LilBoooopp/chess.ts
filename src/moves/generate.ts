@@ -1,7 +1,7 @@
 import { Color, PieceSymbol } from '../types';
-import { FLAG } from '../constants';
-import { BoardState } from '../board';
-import { fi, ri } from '../board';
+import { FLAG, DIR_KNIGHT, DIR_BISHOP, DIR_ROOK, DIR_KING } from '../constants';
+import { BoardState, fi, ri, isLegalSlide, isLegalKnightStep } from '../board';
+import { isAttacked, inCheck } from '../attacks';
 
 export interface PseudoMove {
   from: number;
@@ -34,7 +34,7 @@ function generatePawnMoves(
     if (fromRank === promoRank) {
       addPromotions(from, singleTo, FLAG.NORMAL, out);
     } else {
-      out.push({ from, to: singleTo, flag: FLAG.NORMAL });
+      out.push({ from, to: singleTo, flags: FLAG.NORMAL });
     }
 
     // Double push (only possible if single push was also clear)
@@ -80,7 +80,7 @@ function generateKnightMoves(from: number, state: BoardState, out: PseudoMove[])
 function generateBishopMoves(from: number, state: BoardState, out: PseudoMove[]) {
   const { board, turn } = state;
 
-  for (const off of DIR_BISHOP) {
+  for (const dir of DIR_BISHOP) {
     let sq = from;
     while (true) {
       const to = sq + dir;
