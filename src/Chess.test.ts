@@ -236,6 +236,18 @@ section('Checkmate');
   expect('schoars mate is checkmate', g2.isCheckmate(), true);
 }
 
+// --- Stalemate ---
+
+section('Stalemate');
+{
+  const g = new Chess();
+  g.load('k7/8/1Q6/8/8/8/8/7K b - - 0 1');
+  expect('stalemate detected',      g.isStalemate(), true);
+  expect('stalemate is draw',       g.isDraw(), true);
+  expect('stalemate not checkmate', g.isCheckmate(), false);
+  expect('stalemate is game over',  g.isGameOver(), true);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
