@@ -76,6 +76,20 @@ section('Captures');
   expect('d4 is empty',       g.get('d4'), null);
 }
 
+// --- En passant ---
+
+section('En passant');
+{
+  const g = new Chess();
+  g.load('8/8/8/3Pp3/8/8/8/8 w - e6 0 1');
+  const m = g.move({ from: 'd5', to: 'e6' });
+  expect('en passant move',       m !== null, true);
+  expect('en passant flag',       m?.flags, 'e');
+  expect('capturing pawn on e6',  g.get('e6'), { type: 'p', color: 'w' });
+  expect('captured pawn removed', g.get('e5'), null);
+  expect('d5 is empty',           g.get('d5'), null);
+}
+
 function results() {
   console.log(`\n${'─'.repeat(50)}`);
   console.log(`Results: ${passed} passed, ${failed} failed`);
