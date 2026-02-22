@@ -20,6 +20,19 @@ function section(name: string) {
   console.log(`\n── ${name} ──`);
 }
 
+// --- Init ---
+section('Initialization');
+{
+  const g = new Chess();
+  expect('default FEN', g.fen(), 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+  expect('white to move', g.turn(), 'w');
+  expect('not in check', g.isCheck(), false);
+  expect('not game over', g.isGameOver(), false);
+  expect('not checkmate', g.isCheckmate(), false);
+  expect('not stalemate', g.isStalemate(), false);
+  expect('not draw', g.isDraw(), false);
+}
+
 function results() {
   console.log(`\n${'─'.repeat(50)}`);
   console.log(`Results: ${passed} passed, ${failed} failed`);
