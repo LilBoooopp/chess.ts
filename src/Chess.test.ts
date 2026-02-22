@@ -432,6 +432,25 @@ section('Board array');
   expect('e4 is empty at start', b[4][4], null);
 }
 
+// --- get / put / remove ---
+
+section('get / put / remove');
+{
+  const g = new Chess();
+  g.clear();
+  g.put({ type: 'k', color: 'w' }, 'e1');
+  g.put({ type: 'k', color: 'b' }, 'e8');
+  g.put({ type: 'q', color: 'w' }, 'd1');
+
+  expect('get queen on d1',   g.get('d1'), { type: 'q', color: 'w' });
+  expect('get king on e1',    g.get('e1'), { type: 'k', color: 'w' });
+  expect('get empty square',  g.get('a1'), null);
+
+  const removed = g.remove('d1');
+  expect('remove returns piece', removed, { type: 'q', color: 'w' });
+  expect('d1 empty after remove', g.get('d1'), null);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
