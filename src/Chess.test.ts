@@ -90,6 +90,27 @@ section('En passant');
   expect('d5 is empty',           g.get('d5'), null);
 }
 
+// --- Promotion ---
+
+section('Promotion');
+{
+  const g = new Chess();
+  g.load('8/P7/8/8/8/8/8/8 w - - 0 1');
+  const m = g.move({ from: 'a7', to: 'a8', promotion: 'q' });
+  expect('promotion move',  m !== null, true);
+  expect('promotion flag',  m?.flags.includes('p'), true);
+  expect('promoted to queen', g.get('a8'), { type: 'q', color: 'w' });
+  expect('a7 is empty',       g.get('a7'), null);
+  expect('san contains =Q',   m?.san.includes('=Q'), true);
+
+  // Underpromotion
+  const g2 = new Chess();
+  g2.load('8/P7/8/8/8/8/8/8 w - - 0 1');
+  const m2 = g2.move({ from: 'a7', to: 'a8', promotion: 'n' });
+  expect('underpromotion to knight',  g2.get('a8'), { type: 'n', color: 'w' });
+  expect('san contains =N',           m2?.san.includes('=N'), true);
+}
+
 function results() {
   console.log(`\n${'─'.repeat(50)}`);
   console.log(`Results: ${passed} passed, ${failed} failed`);
