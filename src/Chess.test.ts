@@ -491,7 +491,21 @@ section('ascii');
   expect('has file labels', a.includes('a b c'), true);
 }
 
+// --- Disambiguation ---
+section('SAN disambiguation');
+{
+  // Two rooks on the same rank
+  const g = new Chess();
+  g.load('4k3/8/8/8/8/8/8/R3K2R w - - 0 1');
+  const m1 = g.move({ from: 'a1', to: 'b1' });
+  expect('rook disambiguates by file', m1?.san, 'Rab1');
 
+  // Two rooks on the same file
+  const g2 = new Chess();
+  g2.load('4k3/8/R7/8/8/R7/8/4K3 w - - 0 1');
+  const m2 = g2.move({ from: 'a3', to: 'a4' });
+  expect('rook disambiguates by rank', m2?.san, 'R3a4');
+}
 
 // --- Results ---
 
