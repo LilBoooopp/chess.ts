@@ -193,6 +193,21 @@ section('Illegal moves');
   expect('cannot castle through check', g3.move({ from: 'e8', to: 'c8' }), null);
 }
 
+// --- Check detection ---
+
+section('Check detection');
+{
+  cont g = new Chess();
+  g.load('4k3/8/8/8/8/8/8/4K2R w - - 0 1');
+  g.move({ from: 'h1', to: 'h8' });
+  expect('rook gives check',  g.isCheck(), true);
+  expect('san has + suffix',  g.history()[0].includes('+'), true);
+
+  const g2 = new Chess();
+  g2.load('4k3/8/8/8/8/8/8/4K3 w - - 0 1');
+  expect('not in check', g2.isCheck(), false);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
