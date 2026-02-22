@@ -1,5 +1,5 @@
 import { Color, PieceSymbol, Square, Piece, Move } from './types';
-import { BoardState, parseFen, boardToFen, sqToIdx, idxToSq } from './board';
+import { BoardState, parseFen, boardToFen, sqToIdx, idxToSq, fi, ri } from './board';
 import { generateLegalMoves } from './moves/filter';
 import { applyMove } from './moves/apply';
 import { inCheck } from './attacks';
@@ -18,6 +18,7 @@ export class Chess extends GameEngine {
   private _positionCounts: Map<string, number> = new Map();
 
   constructor(fen: string = DEFAULT_FEN) {
+    super();
     const parsed = parseFen(fen);
     if (!parsed) throw new Error(`Invalid FEN: ${fen}`);
     this._board = parsed;

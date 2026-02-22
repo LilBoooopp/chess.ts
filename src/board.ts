@@ -9,16 +9,16 @@ export interface BoardState {
   fullMove: number; // increments after black moves
 }
 
-function sqToIdx(sq: string): number {
+export function sqToIdx(sq: string): number {
   return ((parseInt(sq[1]) - 1) * 8 + (sq.charCodeAt(0) - 97));
 }
 
-function idxToSq(idx: number): string {
+export function idxToSq(idx: number): string {
   return (String.fromCharCode(97 + (idx % 8)) + (Math.floor(idx / 8) + 1));
 }
 
-const fi = (idx: number) => idx % 8; // file (0 = 1, 7 = h)
-const ri = (idx:number) => Math.floor(idx / 8) // rank (0 = rank1, 7 = rank8)
+export const fi = (idx: number) => idx % 8; // file (0 = 1, 7 = h)
+export const ri = (idx:number) => Math.floor(idx / 8) // rank (0 = rank1, 7 = rank8)
 
 function isLegalSlide(from: number, to: number): boolean {
   if (to < 0 || to > 63) return (false);
@@ -69,7 +69,7 @@ export function parseFen(fen: string): BoardState | null {
   return (state);
 }
 
-export function boradToFen(state: BoardState): string {
+export function boardToFen(state: BoardState): string {
   let placement = '';
 
   let empty = 0;

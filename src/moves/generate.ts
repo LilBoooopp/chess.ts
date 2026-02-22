@@ -3,7 +3,7 @@ import { FLAG } from '../constants';
 import { BoardState } from '../board';
 import { fi, ri } from '../board';
 
-interface PseudoMove {
+export interface PseudoMove {
   from: number;
   to: number;
   flags: string;
