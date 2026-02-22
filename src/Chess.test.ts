@@ -261,8 +261,8 @@ section('Insufficient material');
   expect('K vs KB', g2.isInsufficientMaterial(), true);
 
   const g3 = new Chess();
-  g3.load('4k3/8/8/8/8/8/8/4KR2 w - - 0 1');
-  expect('K vs KN', g3.isInsufficientMaterial(), true);
+  g3.load('4k3/8/8/8/8/8/8/4KN2 w - - 0 1');
+  expect('K vs KN', g3.isInsufficientMaterial(), true); 
 
   const g4 = new Chess();
   g4.load('4k3/8/8/8/8/8/8/4KR2 w - - 0 1');
@@ -336,13 +336,13 @@ section('Undo');
 
   const undone = g.undo();
   expect('undo returns move', undone?.san, 'e5');
-  expect('back to white turn', g.turn(), 'w');
+  expect('back to black turn', g.turn(), 'b');
   expect('history length after undo', g.history().length, 1);
   expect('e5 empty after undo', g.get('e5'), null);
   expect('e7 restored after undo', g.get('e7'), { type: 'p', color: 'b' });
 
   g.undo();
-  expect('back to start FEN', g.fen(), 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - 0 1');
+  expect('back to start FEN', g.fen(), 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
 
   expect('undo on empty returns null', g.undo(), null);
 }
@@ -488,7 +488,7 @@ section('ascii');
   expect('has border', a.includes('+'), true);
   expect('has white king', a.includes('K'), true);
   expect('has black king', a.includes('k'), true);
-  expect('has file labels', a.includes('a b c'), true);
+  expect('has file labels', a.includes('a  b'), true);
 }
 
 // --- Disambiguation ---
@@ -496,7 +496,7 @@ section('SAN disambiguation');
 {
   // Two rooks on the same rank
   const g = new Chess();
-  g.load('4k3/8/8/8/8/8/8/R3K2R w - - 0 1');
+  g.load('6k1/8/8/8/8/8/8/R6R w - - 0 1');
   const m1 = g.move({ from: 'a1', to: 'b1' });
   expect('rook disambiguates by file', m1?.san, 'Rab1');
 

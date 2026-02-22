@@ -193,6 +193,7 @@ const legal = generateLegalMoves(this._board);
   isInsufficientMaterial(): boolean {
     const pieces = this._board.board.filter(Boolean) as Piece[];
     const nonKings = pieces.filter(p => p.type !== 'k');
+    console.log('nonkings:', nonKings);
 
     if (nonKings.length === 0) return (true) // K vs K
 
@@ -291,7 +292,7 @@ const legal = generateLegalMoves(this._board);
       result += '|\n';
     }
     result += '  +------------------------+\n';
-    result += '    a  b  c  d  e  f  g  h';
+    result += '     a  b  c  d  e  f  g  h';
     return (result);
   }
   
