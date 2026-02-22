@@ -304,7 +304,27 @@ section('Threefold repetition');
   expect('threefold is a draw',           g.isDraw(), true);
 }
 
+// --- History ---
 
+section('History');
+{
+  const g = new Chess();
+  g.move({ from: 'e2', to: 'e4' });
+  g.move({ from: 'e7', to: 'e5' });
+  g.move({ from: 'g1', to: 'f3' });
+
+  expect('history length', g.history().length, 3);
+  expect('history san strings', g.history(), ['e4', 'e5', 'Nf3']);
+
+  const verbose = g.history({ verbose: true }) as any[];
+  expect('verbose history length',  verbose.length, 3);
+  expect('verbose has from/to',     verbose[0].from, 'e2');
+  expect('verbose has san',         verbose[0].san, 'e4');
+  expect('verbose has before FEN',  typeof verbose[0].before, 'string');
+  expect('verbose has after FEN',   typeof verbose[0].after, 'string');
+  expect('move color',              verbose[0].color, 'w');
+  expect('second move color',       verbose[1].color, 'b');
+}
 
 // --- Results ---
 
