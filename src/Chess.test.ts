@@ -419,6 +419,19 @@ section('PGN import/export');
   expect('pgn has Black header', pgn3.includes('[Black "Kasparov"]'), true);
 }
 
+// --- Board array ---
+
+section('Board array');
+{
+  const g = new Chess();
+  const b = g.board();
+  expect('8 ranks',              b.length, 8);
+  expect('8 files per rank',     b[0].length, 8);
+  expect('a8 is black rook',     b[0][0], { type: 'r', color: 'b', square: 'a8' });
+  expect('e1 is white king',     b[7][4], { type: 'k', color: 'w', square: 'e1' });
+  expect('e4 is empty at start', b[4][4], null);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
