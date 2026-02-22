@@ -363,6 +363,21 @@ section('Move generation');
   expect('verbose moves have san', typeof verbose[0].san, 'string');
 }
 
+// --- SAN move input ---
+
+section('SAN move input');
+{
+  const g = new Chess();
+  expect('e4 by SAN', g.move('e4')?.san, 'e4');
+  g.move('e5');
+  expect('Nf3 by SAN', g.move('Nf3')?.san, 'Nf3');
+  g.move('Nc6');
+  expect('Bb5 by SAN', g.move('Bb5')?.san, 'Bb5');
+
+  // invalid SAN
+  expect('invalid SAN returns null', g.move('ke2'), null);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
