@@ -49,6 +49,21 @@ section('Basic moves');
   expect('black to move after e4',  g.turn(), 'b');
 }
 
+// --- FEN load ---
+
+section('FEN load');
+{
+  const g = new Chess();
+  g.load('rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2');
+  expect('correct turn after load', g.turn(), 'w');
+  expect('white pawn on e4',        g.get('e4'), { type: 'p', color: 'w' });
+  expect('black pawn on e5',        g.get('e5'), { type: 'p', color 'b' });
+  expect('load returns true', new Chess().load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'), true);
+  expect('invalid FEN returns false', new Chess().load('not a fen'), false);
+}
+
+
+
 function results() {
   console.log(`\n${'─'.repeat(50)}`);
   console.log(`Results: ${passed} passed, ${failed} failed`);
