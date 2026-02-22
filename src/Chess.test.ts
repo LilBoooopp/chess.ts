@@ -111,9 +111,13 @@ section('Promotion');
   expect('san contains =N',           m2?.san.includes('=N'), true);
 }
 
-function results() {
-  console.log(`\n${'─'.repeat(50)}`);
-  console.log(`Results: ${passed} passed, ${failed} failed`);
-  if (failed === 0) console.log('All tests passed!');
-  else process.exit(1);
+// --- Results ---
+
+console.log(`\n${'─'.repeat(50)}`);
+console.log(`Results: ${passed} passed, ${failed} failed`);
+if (failed === 0) {
+  console.log('All tests passed!');
+} else {
+  process.exit(1);
 }
+
