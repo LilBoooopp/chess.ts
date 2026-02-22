@@ -55,14 +55,26 @@ section('FEN load');
 {
   const g = new Chess();
   g.load('rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2');
-  expect('correct turn after load', g.turn(), 'w');
-  expect('white pawn on e4',        g.get('e4'), { type: 'p', color: 'w' });
-  expect('black pawn on e5',        g.get('e5'), { type: 'p', color 'b' });
-  expect('load returns true', new Chess().load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'), true);
+  expect('correct turn after load',   g.turn(), 'w');
+  expect('white pawn on e4',          g.get('e4'), { type: 'p', color: 'w' });
+  expect('black pawn on e5',          g.get('e5'), { type: 'p', color 'b' });
+  expect('load returns true',         new Chess().load('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'), true);
   expect('invalid FEN returns false', new Chess().load('not a fen'), false);
 }
 
+// --- Captures ---
 
+section('Captures');
+{
+  const g = new Chess();
+  g.load('8/8/8/4p3/3P4/8/8/8 w - - 0 1');
+  const m = g.move({ from: 'd4', to: 'e5' });
+  expect('capture works',     m !== null, true);
+  expect('capture flag',      m?.flags.includes('c'), true);
+  expect('captured piece',    m?.captured, 'p');
+  expect('e5 has white pawn', g.get('e5'), { type: 'p', color: 'w' });
+  expect('d4 is empty',       g.get('d4'), null);
+}
 
 function results() {
   console.log(`\n${'─'.repeat(50)}`);
