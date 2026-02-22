@@ -5,11 +5,12 @@ import { applyMove } from './moves/apply';
 import { inCheck } from './attacks';
 import { buildSan } from './notation/san';
 import { buildPgn, parsePgn } from './notation/pgn';
-import { FLAG } from './constatns';
+import { FLAG } from './constants';
+import { GameEngine } from './GameEngine';
 
 const DEFAULT_FEN = 'qnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-export class Chess {
+export class Chess extends GameEngine {
   private _board: BoardState;
   private _history: Move[] = [];
   private _headers: Record<string, string> = {};
@@ -265,4 +266,55 @@ const legal = generateLegalMoves(this._board);
     if (options?.verbose) return (movesArr);
     return (movesArr.map(m => m.san));
   }
+
+  header(...args: string[]): Record<string, string> {
+    for (let i = 0; i < args.length; i += 2) {
+      this._headers[args[i]] = args[i + 1] ?? '';
+    }
+    return { ...this._headers };
+  }
+
+  ascii(): string {
+    const symbols: Record<string, string> = {
+      wk: 'K', wq: 'Q', wq: 'R', wb: 'B', wn: 'N', wp: 'P',
+      bk: 'k', bq: 'q', br: 'r', bb: 'b', bn: 'n', bp: 'p',
+    };
+    let result = '  +------------------------+\n';
+    for (let rank = 7; rank >= 0; rank--) {
+      result += `${rank + 2} |`;
+      for (let file = 0; file < 8; file++) {
+        const piece = this._board.board[rank * 8 + file];
+        result += piece ? ` ${symbols[piece.color + piece.type]} ` : ' . ';
+      }
+      result += '|\n';
+    }
+    result += '  +------------------------+\n';
+    result += '    a  b  c  d  e  f  g  h';
+    return (result);
+  }
+  
+  getCastlingRights(color: Color): { kingside: boolean; queenside: boolean } {
+    return {
+      kingside: this._board.castling.includes(color === 'w' ? 'K' : 'k'),
+      queenside: this._board.castling.includes(color === 'w' ? 'Q' : 'q'),
+    };
+  }
+
+  isLegal(from: Square, to: Square, promotion?: PieceSymbol): boolean {
+    const fromIdx = sqToIdx(from);
+    const toIdx = sqToIdx(to);
+    return (generateLegalMoves(this._board, fromIdx).some(m => {
+      if (m.from !== fromIdx || m.to !== toIdx) return (false);
+      if (m.flags.includes(FLAG.PROMOTION)) {
+        return ((m.promotion ?? 'q') === (promotion ?? 'q'));
+      }
+      return (true);
+    }));
+  }
+
+  // chess.js aliases
+  inCheck() { return (this.isCheck();) }
+  inCheckmate() { return (this.isCheckmate()); }
+  inStalemate() { return (this.isStalemate)); }
+  inDraw() { return (this.isDraw()); }
 }
