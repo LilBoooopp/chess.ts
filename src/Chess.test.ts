@@ -378,6 +378,47 @@ section('SAN move input');
   expect('invalid SAN returns null', g.move('ke2'), null);
 }
 
+// --- LAN move input ---
+
+section('LAN move input');
+{
+  const g = new Chess();
+  expect('e2e4 by LAN', g.move('e2e4')?.san, 'e4');
+  g.move('e7e5');
+  expect('g1f3 by LAN', g.move('g1f3')?.san, 'Nf3');
+}
+
+// --- PGN export/import ---
+
+section('PGN import/export');
+{
+  const g = new Chess();
+  g.move({ from: 'e2', to: 'e4' });
+  g.move({ from: 'e7', to: 'e5' });
+  g.move({ from: 'g1', to: 'f3' });
+
+  const pgn = g.pgn();
+  expect('pgn has move numbers',  pgn.includes('1.'), true);
+  expect('pgn has e4',            pgn.includes('e4'), true);
+  expect('pgn has e5',            pgn.includes('e5'), true);
+  expect('pgn has Nf3',           pgn.includes('Nf3'), true);
+
+  const g2 = new Chess();
+  expect('loadPgn returns true',  g2.loadPgn(pgn), true);
+  expect('same history length',   g2.history().length, 3);
+  expect('same final FEN',        g2.fen(), g.fen());
+  expect('same history',          g2.history(), g.history());
+
+  // With headers
+  const g3 = new Chess();
+  g3.header('White', 'Magnus', 'Black', 'Kasparov');
+  g3.move('e4');
+  g3.move('e5');
+  const pgn3 = g3.pgn();
+  expect('pgn has White header', pgn3.includes('[White "Magnus"]'), true);
+  expect('pgn has Black header', pgn3.includes('[Black "Kasparov"]'), true);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
