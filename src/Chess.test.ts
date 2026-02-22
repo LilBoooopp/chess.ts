@@ -468,6 +468,31 @@ section('reset / clear');
   expect('clear empties history', g2.history().length, 0);
 }
 
+// --- isLegal ---
+
+section('isLegal');
+{
+  const g = new Chess();
+  expect('e2-e4 legal', g.isLegal('e2', 'e4'), true);
+  expect('e2-e3 legal', g.isLegal('e2', 'e3'), true);
+  expect('e2-e5 illegal', g.isLegal('e2', 'e5'), false);
+  expect('e7-e5 illegal', g.isLegal('e7', 'e5'), false); // wrong color
+}
+
+// --- ascii ---
+
+section('ascii');
+{
+  const g = new Chess();
+  const a = g.ascii();
+  expect('has border', a.includes('+'), true);
+  expect('has white king', a.includes('K'), true);
+  expect('has black king', a.includes('k'), true);
+  expect('has file labels', a.includes('a b c'), true);
+}
+
+
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
