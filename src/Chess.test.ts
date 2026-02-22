@@ -451,6 +451,23 @@ section('get / put / remove');
   expect('d1 empty after remove', g.get('d1'), null);
 }
 
+// --- reset / clear ---
+
+section('reset / clear');
+{
+  const g = new Chess();
+  g.move('e4');
+  g.reset();
+  expect('reset restores FEN', g.fen(), 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+  expect('reset clears history', g.history().length, 0);
+  expect('reset restores turn', g.turn(), 'w');
+
+  const g2 = new Chess();
+  g2.clear();
+  expect('clera empties board', g2.get('e1'), null);
+  expect('clear empties history', g2.history().length, 0);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
