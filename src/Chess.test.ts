@@ -152,6 +152,26 @@ section('Castling');
   expect('black rook on d8',        g4.get('d8'), { type: 'r', color: 'b' });
 }
 
+// --- Caslting rights ---
+
+section('Castling rights');
+{
+  const g = new Chess();
+  expect('white starts with both rights', g.getCastlingRights('w'), { kingside: true, queenside: true });
+  expect('black starts with both rights', g.getCastlingRights('b'), { kingside: true, queenside: true });
+
+  const g2 = new Chess();
+  g2.load('r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1');
+  g2.move({ from: 'e1', to: 'g1' });
+  expect('white loses rights after castle', g2.getCastlingRights('w'), { kingside: false, queenside: false });
+
+  // Rook moves removes that side's right
+  const g3 = new Chess();
+  g3.load('e4k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1');
+  g3.move({ from: 'h1', to: 'h2' });
+  expect('moving h1 rook removes kingside', g3.getCastlingRights('w'), { kingside: false, queenside: true });
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
