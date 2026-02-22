@@ -111,6 +111,47 @@ section('Promotion');
   expect('san contains =N',           m2?.san.includes('=N'), true);
 }
 
+// --- Castling ---
+section('Castling');
+{
+  // White kingside
+  const g = new Chess();
+  g.load('r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1');
+  const m = g.move({ from: 'e1', to: 'g1' });
+  expect('kingside castle', m !== null, true);
+  expect('castle flag',     m?.flags, 'k');
+  expect('king on g1',      g.get('g1'), { type: 'k', color: 'w' });
+  expect('rook on f1',      g.get('f1'), { type: 'r', color: 'w' });
+  expect('h1 empty',        g.get('h1'), null);
+  expect('e1 empty',        g.get('e1'), null);
+
+  // White queenside
+  const g2 = new Chess();
+  g2.load('r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1');
+  const m2 = g2.move({ from: 'e1', to: 'c1' });
+  expect('queenside castle', m2 !== null, true);
+  expect('queen-castle flag', m2?.flags, 'q');
+  expect('king on c1',        g2.get('c1'), { type: 'k', color: 'w' });
+  expect('rook on d1',        g2.get('d1'), { type: 'r', color: 'w' });
+  expect('a1 empty',          g2.get('a1'), null);
+
+  // Black kingside
+  const g3 = new Chess();
+  g3.load('r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1');
+  const m3 = g3.move({ from: 'e8', to: 'g8' });
+  expect('black kingside castle', m3 !== null, true);
+  expect('black king on g8',      g3.get('g8'), { type: 'k', color: 'b' });
+  expect('black rook on f8',      g3.get('f8'), { type: 'r', color: 'b' });
+
+  // Black queenside
+  const g4 = new Chess();
+  g4.load('r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1');
+  const m4 = g4.move({ from: 'e8', to: 'c8' });
+  expect('black queenside castle',  m4 !== null, true);
+  expect('black king on c8',        g4.get('c8'), { type: 'k', color: 'b' });
+  expect('black rook on d8',        g4.get('d8'), { type: 'r', color: 'b' });
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
