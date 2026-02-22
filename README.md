@@ -19,6 +19,21 @@ Built as part of the ft_transcendence project at 42 Lausanne, designed as a drop
 git clone git@github.com:LilBoooopp/chess.ts.git
 cd chess.ts
 npm install
+npx ts-node src/Chess.test.ts
+```
+
+### As a submodule in another project
+```bash
+git submodule add git@github.com:LilBoooopp/chess.ts.git frontend/src/components/chess
+```
+
+To update to the latest version:
+```bash
+cd frontend/src/components/chess
+git pull origin main
+cd ../../../..
+git add frontend/src/components/chess
+git commit -m "Update chess submodule"
 ```
 
 ## Usage
