@@ -248,6 +248,31 @@ section('Stalemate');
   expect('stalemate is game over',  g.isGameOver(), true);
 }
 
+// --- Insufficient material ---
+
+section('Insufficient material');
+{
+  const g1 = new Chess();
+  g1.load('4k3/8/8/8/8/8/8/4K3 w - - 0 1');
+  expect('K vs K',  g1.isInsufficientMaterial(), true);
+  
+  const g2 = new Chess();
+  g2.load('4k3/8/8/8/8/8/8/4KB2 w - - 0 1');
+  expect('K vs KB', g2.isInsufficientMaterial(), true);
+
+  const g3 = new Chess();
+  g3.load('4k3/8/8/8/8/8/8/4KR2 w - - 0 1');
+  expect('K vs KN', g3.isInsufficientMaterial(), true);
+
+  const g4 = new Chess();
+  g4.load('4k3/8/8/8/8/8/8/4KR2 w - - 0 1');
+  expect('K vs KR is sufficient', g4.isInsufficientMaterial(), false);
+
+  const g5 = new Chess();
+  g5.load('4k3/8/8/8/8/8/8/4KQ2 w - - 0 1');
+  expect('K vs KQ is sufficient', g5.isInsufficientMaterial(), false);
+}
+
 // --- Results ---
 
 console.log(`\n${'─'.repeat(50)}`);
