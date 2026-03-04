@@ -18,7 +18,7 @@ const PST: Record<string, number[]> = {
     50, 50, 50, 50, 50, 50, 50, 50,
     10, 10, 20, 30, 30, 20, 10, 10,
     5,  5,  10, 25, 25, 10, 5,  5,
-    0,  0,  0,  20, 20, 0,  0,  0
+    0,  0,  0,  20, 20, 0,  0,  0,
     5,  5,  -10,0,  0,  -10,-5, 5,
     5,  10, 10, -20,-20,10, 10, 5,
     0,  0,  0,  0,  0,  0,  0,  0,
@@ -77,7 +77,7 @@ const PST: Record<string, number[]> = {
 
 // PST index calculation
 // black mirrows vertically for opposite rank
-fucntion pstIndex(rank: number, file: number, isWhite: boolean): number {
+function pstIndex(rank: number, file: number, isWhite: boolean): number {
   return (isWhite
     ? rank * 8 + file
     : (7 - rank) * 8 + file);
@@ -149,7 +149,7 @@ function minimax(
   } else {
     let best = Infinity;
     for (const move of moves) {
-      chess.move({ from: move.from, to: move.to, promotion, move.promotion });
+      chess.move({ from: move.from, to: move.to, promotion: move.promotion });
       const score = minimax(chess, depth - 1, alpha, beta, true);
       chess.undo();
 
@@ -204,7 +204,8 @@ export function getBestMove(chess: Chess, options: AIOptions = {}): Move | null 
 
   // Seach each root move, track the one with best minimax
   for (const move of moves) {
-    chess.move({ from: move.from, to: move.to, promotion: move.promotion });
+    const made = chess.move({ from: move.from, to: move.to, promotion: move.promotion });
+    if (!made) continue;
     let score = minimax(chess, depth - 1, -Infinity, Infinity, !isMaximizing);
     chess.undo();
 
@@ -217,5 +218,5 @@ export function getBestMove(chess: Chess, options: AIOptions = {}): Move | null 
     }
   }
 
-  return (bestMove);
+  return (bestMove ?? moves[0] ?? null);
 }

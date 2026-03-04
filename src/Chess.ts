@@ -16,12 +16,14 @@ export class Chess extends GameEngine {
   private _history: Move[] = [];
   private _headers: Record<string, string> = {};
   private _positionCounts: Map<string, number> = new Map();
+  private _startFen: string = DEFAULT_FEN;
 
   constructor(fen: string = DEFAULT_FEN) {
     super();
     const parsed = parseFen(fen);
     if (!parsed) throw new Error(`Invalid FEN: ${fen}`);
     this._board = parsed;
+    this._startFen = fen;
     this._recordPosition();
   }
 
@@ -120,7 +122,7 @@ const legal = generateLegalMoves(this._board);
     else this._positionCounts.set(key, count - 1);
 
     // replay from scratch
-    const startFen = this._headers['FEN'] ?? DEFAULT_FEN;
+    const startFen = this._headers['FEN'] ?? this._startFen;
     const replayMoves = [...this._history];
     this.load(startFen);
     for (const m of replayMoves) {
@@ -142,6 +144,7 @@ const legal = generateLegalMoves(this._board);
     this._history = [];
     this._positionCounts.clear();
     this._recordPosition();
+    this._startFen = fen;
     return (true);
   }
 
@@ -193,7 +196,7 @@ const legal = generateLegalMoves(this._board);
   isInsufficientMaterial(): boolean {
     const pieces = this._board.board.filter(Boolean) as Piece[];
     const nonKings = pieces.filter(p => p.type !== 'k');
-    console.log('nonkings:', nonKings);
+    // console.log('nonkings:', nonKings);
 
     if (nonKings.length === 0) return (true) // K vs K
 

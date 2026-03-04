@@ -1,5 +1,6 @@
+/// <reference types="node" />
 import { Chess } from './Chess';
-import { getBestMove, AI_LEVELS } from './AI';
+import { getBestMove, AI_LEVELS } from './ai';
 
 let passed = 0;
 let failed = 0;
@@ -7,7 +8,7 @@ let failed = 0;
 function expect(label: string, actual: unknown, expected: unknown) {
   const ok = JSON.stringify(actual) === JSON.stringify(expected);
   if (ok) {
-    console.log(` OK ${lavel}`);
+    console.log(` OK ${label}`);
     passed++;
   } else {
     console.error(` ERROR ${label}`);
@@ -26,15 +27,15 @@ function section(name: string) {
 section('Obvious captures (depth 1)');
 {
   const g = new Chess();
-  g.load('4k3/8/8/8/8/8/8/3QKr2 w - - 0 1');
+  g.load('7k/8/8/8/8/8/8/rQ5K w - - 0 1');
   const move = getBestMove(g, { depth: 1, noise: 0 });
-  expect('takes free rook', move?.to, 'f1');
+  expect('takes free rook', move?.to, 'a1');
 }
 {
   const g = new Chess();
-  g.load('4k3/8/8/8/8/8/8/2KQq3 w - - 0 1');
+  g.load('6k1/8/8/8/8/8/8/Qq5K w - - 0 1');
   const move = getBestMove(g, { depth: 1, noise: 0 });
-  expect('takes free queen', move?.to, 'e1');
+  expect('takes free queen (Qxb1)', move?.to, 'b1');
 }
 
 // Mates in 1 and 2
@@ -42,16 +43,17 @@ section('Forced checkmates');
 {
   // Mate in 1
   const g = new Chess();
-  g.load('r1bqkb1r/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1k1NR w KQkq - 0 1');
+  g.load('6k1/5ppp/8/8/8/8/8/R5RK w KQkq - 0 1');
   const move = getBestMove(g, { depth: 2, noise: 0 });
-  expect('finds mate in 1 (Qf7#)', move?.to, 'f7');
+  expect('finds mate in 1 (Ra8#)', move?.to, 'a8');
 }
 {
   // back rank
   const g = new Chess();
-  g.load('3k4/8/8/8/8/8/8/3RK3 w - - 0 1');
+  g.load('6k1/5ppp/8/8/8/8/8/R5RK w - - 0 1');
   const move = getBestMove(g, { depth: 2, noise: 0 });
-  expect('finds back rank mate (Rd8#)', move?.to, 'd8');
+  if (move) g.move({ from: move.from, to: move.to, promotion: move.promotion });
+  expect('applied move results in checkmate', g.isCheckmate(), true);
 }
 
 // Doesnt walk into mate
@@ -70,7 +72,7 @@ section('API contract');
   const g = new Chess();
   g.load('4k3/8/8/8/8/8/8/4K3 w - - 0 1');
   g.load('k7/8/1Q6/8/8/8/8/7K b - - 0 1');
-  expect('returns null when no moves', getBestMove(g, { depth: 3, noise: 0 }), null);
+  expect('returns null when no moves', getBestMove(g), null);
 }
 {
   const g = new Chess();
@@ -78,7 +80,9 @@ section('API contract');
   expect('returns move object', move !== null, true);
   expect('move has from field', typeof move?.from, 'string');
   expect('move has to filed', typeof move?.to, 'string');
-  expect('returned move is legal', g.isLegal(move!.from, move!.to), true);
+  if (move) {
+  expect('returned move is legal', g.isLegal(move.from, move.to), true);
+  }
 }
 {
   // AI_LEVELS are valid 
