@@ -16,12 +16,15 @@ export class Chess extends GameEngine {
   private _history: Move[] = [];
   private _headers: Record<string, string> = {};
   private _positionCounts: Map<string, number> = new Map();
+  private _startFen: string = DEFAULT_FEN;
+  private _snapshots: BoardState[] = [];
 
   constructor(fen: string = DEFAULT_FEN) {
     super();
     const parsed = parseFen(fen);
     if (!parsed) throw new Error(`Invalid FEN: ${fen}`);
     this._board = parsed;
+    this._startFen = fen;
     this._recordPosition();
   }
 
@@ -40,7 +43,7 @@ export class Chess extends GameEngine {
   }
 
   move(input: { from: Square; to: Square; promotion?: PieceSymbol } | string): Move | null {
-const legal = generateLegalMoves(this._board);
+    const legal = generateLegalMoves(this._board);
     const beforeFen = this.fen();
 
     let pm = legal.find((m) => {
@@ -64,6 +67,7 @@ const legal = generateLegalMoves(this._board);
     // build full Move object
     const move = this._buildMove(pm, beforeFen, legal);
 
+    this._snapshots.push({ ...this._board, board: [...this._board.board] });
     // apply to board
     this._board = applyMove(this._board, pm);
 
@@ -119,13 +123,7 @@ const legal = generateLegalMoves(this._board);
     if (count <= 1) this._positionCounts.delete(key);
     else this._positionCounts.set(key, count - 1);
 
-    // replay from scratch
-    const startFen = this._headers['FEN'] ?? DEFAULT_FEN;
-    const replayMoves = [...this._history];
-    this.load(startFen);
-    for (const m of replayMoves) {
-      this.move({ from: m.from, to: m.to, promotion: m.promotion });
-    }
+    this._board = this._snapshots.pop()!;
 
     return (undone);
   }
@@ -140,8 +138,10 @@ const legal = generateLegalMoves(this._board);
     if (!parsed) return (false);
     this._board = parsed;
     this._history = [];
+    this._snapshots = [];
     this._positionCounts.clear();
     this._recordPosition();
+    this._startFen = fen;
     return (true);
   }
 
@@ -175,6 +175,7 @@ const legal = generateLegalMoves(this._board);
       fullMove: 1
     };
     this._history = [];
+    this._snapshots = [];
     this._positionCounts.clear();
   }
 
@@ -193,7 +194,7 @@ const legal = generateLegalMoves(this._board);
   isInsufficientMaterial(): boolean {
     const pieces = this._board.board.filter(Boolean) as Piece[];
     const nonKings = pieces.filter(p => p.type !== 'k');
-    console.log('nonkings:', nonKings);
+    // console.log('nonkings:', nonKings);
 
     if (nonKings.length === 0) return (true) // K vs K
 

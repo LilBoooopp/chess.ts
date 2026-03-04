@@ -19,7 +19,7 @@ Read the architecture section in the README before making changes. Each file has
 1. Fork the repository
 2. Create a branch - `git switch -c your-feature-name`
 3. Make your changes
-4. Add or update tests in `Chess.test.ts`
+4. Add or update tests in `Chess.test.ts` or `ai.test.ts`
 5. Run the test suite - all tests must pass
 6. Open a pull request with a clear description of what changed and why
 
@@ -46,6 +46,15 @@ section('Your feature');
 
 Use FEN positions to set up specific scenarios rather than playing many moves to reach them - it makes tests faster and easier to understand.
 
+**Always verify your FEN positions manually before commiting**. A common source of bugs in tests is a position that looks correct but has a king in unexpected check, a piece blocking a ray, or an illegal arrangement. Use game.ascii() to visually confirm the board looks as intended, and trace each expected move to make sure it is actually legal in that position.
+
+## Adding AI test
+AI tests live in `ai.test.ts` and follow the same harness. A few additional guidelines:
+
+**Use deterministic setups.** Always pass `{ noise: 0 }` in tests - noise is random by design and will cause test to fail intermittently. Only test noise behaviour qualitatively (e.g. "the AI plays differently across runs") if needed, never with `expect()`.
+
+**Keep depth low.** Use `depth: 1` for evaluation sanity checks (does the AI take a free piece?), `depth: 2` for mate-in-one detection. Higher depths slow the test suite and are better suited for manual play testing.
+
 ## Reporting bugs
 
 Open an issue with:
@@ -59,11 +68,18 @@ A failing test case that reproduces the bug is even better.
 
 Some areas that could use improvement:
 
+**Engine**
  - **Chess960** - castling rules differ, would make a good first variant
  - **Performance** - move generation could use bitboards for speed
  - **Validation** - `load()` could validate that the FEN represents a legal position
  - **PGN** - support for comments, variations, and NAG annotations
  - **More tests** - especially for edge cases in SAN disambiguation
+
+**AI**
+ - Move ordering - trying captures and checks first dramatically improves alpha-beta cutoffs
+ - Quiescence search - extend search on captures to avoid evaluating positions mid-exchange
+ - Endgametables - separate PSTs for king activity in the endgame
+ - Opening book - a small table of common openings to vary early play
 
 ## Questions
 
