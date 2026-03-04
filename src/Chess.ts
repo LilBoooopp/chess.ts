@@ -17,6 +17,7 @@ export class Chess extends GameEngine {
   private _headers: Record<string, string> = {};
   private _positionCounts: Map<string, number> = new Map();
   private _startFen: string = DEFAULT_FEN;
+  private _snapshots: BoardState[] = [];
 
   constructor(fen: string = DEFAULT_FEN) {
     super();
@@ -66,6 +67,7 @@ const legal = generateLegalMoves(this._board);
     // build full Move object
     const move = this._buildMove(pm, beforeFen, legal);
 
+    this._snapshots.push({ ...this, board: [...this._board.board] });
     // apply to board
     this._board = applyMove(this._board, pm);
 
@@ -121,13 +123,7 @@ const legal = generateLegalMoves(this._board);
     if (count <= 1) this._positionCounts.delete(key);
     else this._positionCounts.set(key, count - 1);
 
-    // replay from scratch
-    const startFen = this._headers['FEN'] ?? this._startFen;
-    const replayMoves = [...this._history];
-    this.load(startFen);
-    for (const m of replayMoves) {
-      this.move({ from: m.from, to: m.to, promotion: m.promotion });
-    }
+    this._board = this._snapshots.pop()!;
 
     return (undone);
   }
@@ -142,6 +138,7 @@ const legal = generateLegalMoves(this._board);
     if (!parsed) return (false);
     this._board = parsed;
     this._history = [];
+    this._snapshots = [];
     this._positionCounts.clear();
     this._recordPosition();
     this._startFen = fen;
@@ -178,6 +175,7 @@ const legal = generateLegalMoves(this._board);
       fullMove: 1
     };
     this._history = [];
+    this._snapshots = [];
     this._positionCounts.clear();
   }
 
