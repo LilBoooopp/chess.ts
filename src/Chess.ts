@@ -43,7 +43,7 @@ export class Chess extends GameEngine {
   }
 
   move(input: { from: Square; to: Square; promotion?: PieceSymbol } | string): Move | null {
-const legal = generateLegalMoves(this._board);
+    const legal = generateLegalMoves(this._board);
     const beforeFen = this.fen();
 
     let pm = legal.find((m) => {
@@ -67,7 +67,7 @@ const legal = generateLegalMoves(this._board);
     // build full Move object
     const move = this._buildMove(pm, beforeFen, legal);
 
-    this._snapshots.push({ ...this, board: [...this._board.board] });
+    this._snapshots.push({ ...this._board, board: [...this._board.board] });
     // apply to board
     this._board = applyMove(this._board, pm);
 
