@@ -149,7 +149,7 @@ function minimax(
   // Leaf node: return static eval
   if (depth === 0) return (evaluate(chess));
 
-  const moves = orderMoves(chess.moves({ verbose: true }) as Move[]);
+  const moves = orderMoves(chess.moves({ verbose: true }) as Move[], chess);
 
   if (isMaximizing) {
     let best = -Infinity;
