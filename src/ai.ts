@@ -108,7 +108,7 @@ function evaluate(chess: Chess): number {
   return (score);
 }
 
-function orderMoves(moves: Move[], chess: Chess): Move[] {
+function orderMoves(moves: Move[]): Move[] {
   return (moves.sort((a, b) => {
     const scoreMove = (m: Move): number => {
       let score = 0;
@@ -123,6 +123,43 @@ function orderMoves(moves: Move[], chess: Chess): Move[] {
     }
     return (scoreMove(b) - scoreMove(a));
   }));
+}
+
+function quiescence(
+  chess: Chess,
+  alpha: number,
+  beta: number,
+  isMaximizing: boolean
+): number {
+  const standPat = evaluate(chess);
+
+  if (isMaximizing) {
+    if (standPat >= beta) return (beta);
+    alpha = Math.max(alpha, standPat);
+  } else {
+    if (standPat <= alpha) return (alpha);
+    beta = Math.min(beta, standPat);
+  }
+
+  const captures = (chess.moves({ verbose: true }) as Move[])
+    .filter(m => m.captured)
+    .sort((a, b) => PIECE_VALUES[b.captured!] - PIECE_VALUES[a.captured!]);
+
+  for (const move of captures) {
+    chess.move({ from: move.from, to: move.to, promotion: move.promotion });
+    const score = quiescence(chess, alpha, beta, !isMaximizing);
+    chess.undo();
+
+    if (isMaximizing) {
+      alpha = Math.max(alpha, score);
+      if (alpha >= beta) return (beta);
+    } else {
+      beta = Math.min(beta, score);
+      if (alpha >= beta) return (alpha);
+    }
+  }
+
+  return (isMaximizing ? alpha : beta);
 }
 
 // Minmax with alpha-beta pruning
@@ -147,9 +184,9 @@ function minimax(
   }
 
   // Leaf node: return static eval
-  if (depth === 0) return (evaluate(chess));
+  if (depth === 0) return (quiescence(chess, alpha, beta, isMaximizing));
 
-  const moves = orderMoves(chess.moves({ verbose: true }) as Move[], chess);
+  const moves = orderMoves(chess.moves({ verbose: true }) as Move[]);
 
   if (isMaximizing) {
     let best = -Infinity;
