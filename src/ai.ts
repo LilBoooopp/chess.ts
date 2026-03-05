@@ -108,6 +108,23 @@ function evaluate(chess: Chess): number {
   return (score);
 }
 
+function orderMoves(moves: Move[], chess: Chess): Move[] {
+  return (moves.sort((a, b) => {
+    const scoreMove = (m: Move): number => {
+      let score = 0;
+      // captures MVV-LVA (Most Valuable Victim, Least Valuable Attacker)
+      if (m.captured) {
+        score += 10 * PIECE_VALUES[m.captured] - PIECE_VALUES[m.piece];
+      }
+      if (m.promotion) {
+        score += PIECE_VALUES[m.promotion];
+      }
+      return (score);
+    }
+    return (scoreMove(b) - scoreMove(a));
+  }));
+}
+
 // Minmax with alpha-beta pruning
 // alpha: best score White has guaranteed (-infinity)
 // beta: best score black has guaranteed (+infinity)
@@ -132,7 +149,7 @@ function minimax(
   // Leaf node: return static eval
   if (depth === 0) return (evaluate(chess));
 
-  const moves = chess.moves({ verbose: true }) as Move[];
+  const moves = orderMoves(chess.moves({ verbose: true }) as Move[]);
 
   if (isMaximizing) {
     let best = -Infinity;
