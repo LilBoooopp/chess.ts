@@ -53,7 +53,7 @@ export function isAttacked(
   }
 
   // Pawns (direction depends on attacking color)
-  const pawnOffsets = byColor === 'w' ? [7, 9] : [-7, -9];
+  const pawnOffsets = byColor === 'b' ? [7, 9] : [-7, -9];
   for (const off of pawnOffsets) {
     const from = targetIdx + off;
     if (isLegalSlide(targetIdx, from) && board[from]?.type === 'p' && board[from]?.color === byColor)
